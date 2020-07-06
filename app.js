@@ -5,10 +5,10 @@ const app = express();
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: false }));
 const connection = mysql.createConnection({
-  host: "sql12.freemysqlhosting.net",
-  user: "sql12341681",
-  password: "ktKyxtzk2q",
-  database: "sql12341681",
+  host: "sql12.freesqldatabase.com",
+  user: "sql12352920",
+  password: "YSliXwJhxC",
+  database: "sql12352920",
   port: "3306",
   multipleStatements: true,
 });
