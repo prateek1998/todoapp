@@ -55,7 +55,7 @@ app.post("/create", (req, res) => {
 // app.get('/key',(req,res) => {
   const updateKeyIndex = () => {
   Todo.find().sort({_id:-1}).exec(function(err,todo){
-    if(err) console.log("error in getting todo ",err)
+    if(err) console.log("error in Updating todo ",err)
     else{
       for(let i = 0; i<todo.length; i++){
         todo[i].keyIndex = i+1 ; 
