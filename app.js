@@ -95,4 +95,6 @@ app.post("/update/:id", (req, res) => {
   })
 })
 
-app.listen(PORT || 3000);
+app.listen(PORT || 3000, function(){
+  console.log(chalk.green(`server is working at port ${PORT}`))
+});
