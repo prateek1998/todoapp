@@ -32,7 +32,7 @@ app.get("/index", (req, res) => {
     if(err) console.log("error in getting todo ",err)
     else{
       // console.log(todos)
-      // updateKeyIndex();
+      updateKeyIndex();
       res.render("index.ejs", { items: todos });
     }    
   })
