@@ -1,86 +1,98 @@
 const express = require("express");
-const mysql = require("mysql");
+const dotenv = require('dotenv');
+const { PORT, DB } = require('./config');
 const app = express();
+const chalk = require('chalk');
+const morgan = require('morgan');
+const mongoose = require('mongoose');
+require('./models/todos');
+let Todo = mongoose.model('Todos')
 
 app.use(express.static("public"));
+app.use(morgan('tiny',{}));
 app.use(express.urlencoded({ extended: false }));
-const connection = mysql.createConnection({
-  host: "sql12.freesqldatabase.com",
-  user: "sql12352920",
-  password: "YSliXwJhxC",
-  database: "sql12352920",
-  port: "3306",
-  multipleStatements: true,
-});
+dotenv.config();
 
-connection.connect((err) => {
+mongoose.connect(DB.uri, DB.options, function (err) {
+  // Log Error
   if (err) {
-    console.log("error connecting: " + err.stack);
-    return;
+    console.error(chalk.red('Could not connect to MongoDB!'));
+    console.log(err);
+  } else {
+    console.error(chalk.green('Server successfully connected with MongoDB Database'));
   }
-  console.log("success");
-});
+})
 
 app.get("/", (req, res) => {
   res.render("top.ejs");
 });
 
-// SET @id:= 0;UPDATE items SET id = @id := (@id+1);ALTER TABLE items AUTO_INCREMENT = 1;
 app.get("/index", (req, res) => {
-  connection.query("SELECT * FROM items;", (error, results) => {
-    console.log(results);
-    res.render("index.ejs", { items: results });
-  });
-});
-
+  Todo.find({}).sort({_id:-1}).exec(function(err,todos){
+    if(err) console.log("error in getting todo ",err)
+    else{
+      // console.log(todos)
+      // updateKeyIndex();
+      res.render("index.ejs", { items: todos });
+    }    
+  })
+})
+  
 app.get("/new", (req, res) => {
   res.render("new.ejs");
 });
 
 app.post("/create", (req, res) => {
-  connection.query(
-    "INSERT INTO items (name) VALUES (?)",
-    [req.body.itemName],
-    (error, results) => {
-      res.redirect("/index");
-    }
-  );
+  let task = req.body.itemName; 
+  let todo =new Todo();
+  todo.title = task;
+  todo.save(function(err) {
+    if(err) console.log(err);
+    res.redirect("/index");
+  })
 });
+
+// app.get('/key',(req,res) => {
+  const updateKeyIndex = () => {
+  Todo.find().sort({_id:-1}).exec(function(err,todo){
+    if(err) console.log("error in getting todo ",err)
+    else{
+      for(let i = 0; i<todo.length; i++){
+        todo[i].keyIndex = i+1 ; 
+        todo[i].save(function(err) {
+          if(err) console.log(err);
+        })
+      }
+    }
+    // res.json("Successfully Updated");    
+  })
+};
 
 app.post("/delete/:id", (req, res) => {
-  connection.query(
-    "DELETE FROM items WHERE id = ?;SET @id:= 0;UPDATE items SET id = @id := (@id+1);ALTER TABLE items AUTO_INCREMENT = 1;",
-    [req.params.id],
-    (error, results) => {
-      res.redirect("/index");
+  Todo.deleteOne({_id: mongoose.Types.ObjectId(req.params.id)},function(err){
+    if(err){
+        console.log("todo ::delete::err ",err);
+    }else{
+      console.log("res wine delete done");
     }
-  );
-});
-
-app.get("/demo", (req, res) => {
-  res.render("demo.ejs");
+  })     
+  res.redirect("/index");
 });
 
 app.get("/edit/:id", (req, res) => {
-  connection.query(
-    "SELECT * FROM items WHERE id = ?",
-    [req.params.id],
-    (error, results) => {
-      res.render("edit.ejs", { item: results[0] });
-    }
-  );
+  Todo.findOne({_id: mongoose.Types.ObjectId(req.params.id)},function(err,todo){
+    res.render("edit.ejs", { item: todo });
+  });
 });
 
 app.post("/update/:id", (req, res) => {
-  // Write code to update the selected item
-  connection.query(
-    "UPDATE items SET name = ? WHERE id = ?",
-    [req.body.itemName, req.params.id],
-    (error, results) => {
-      res.redirect("/index");
-    }
-  );
-  // Delete the following redirect to the list page
-});
+  Todo.findOne({_id: mongoose.Types.ObjectId(req.params.id)},function(err,todo){
+    todo.title = req.body.itemName;
+    todo.save(function(err) {
+      if(err) console.log(err);
+    })
+    res.redirect("/index");
+  })
+})
 
-app.listen(process.env.PORT || 3000);
+app.listen(PORT || 3000);

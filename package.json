@@ -18,9 +18,12 @@
   },
   "homepage": "https://github.com/prateek1998/prateeksaini.github.io#readme",
   "dependencies": {
+    "chalk": "^4.1.0",
+    "dotenv": "^8.2.0",
     "ejs": "^3.1.2",
     "express": "^4.17.1",
-    "mysql": "^2.18.1",
+    "mongoose": "^5.11.0",
+    "morgan": "^1.10.0",
     "nodemon": "^2.0.3"
   }
 }
