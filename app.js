@@ -32,8 +32,14 @@ app.get("/index", (req, res) => {
     if(err) console.log("error in getting todo ",err)
     else{
       // console.log(todos)
-      updateKeyIndex();
-      res.render("index.ejs", { items: todos });
+      updateKeyIndex(function (err,result) {
+        if(err) console.log("error in Updating todoList key ",err)
+        if(result){
+          console.log("List Key value updated");
+          res.render("index.ejs", { items: todos });
+        }
+      });
+      
     }    
   })
 })
@@ -53,9 +59,12 @@ app.post("/create", (req, res) => {
 });
 
 // app.get('/key',(req,res) => {
-  const updateKeyIndex = () => {
+  const updateKeyIndex = (done) => {
   Todo.find().sort({_id:-1}).exec(function(err,todo){
-    if(err) console.log("error in Updating todo ",err)
+    if(err) {
+      console.log("error in Updating todo ",err)
+      done(null,err);
+    }
     else{
       for(let i = 0; i<todo.length; i++){
         todo[i].keyIndex = i+1 ; 
@@ -63,6 +72,7 @@ app.post("/create", (req, res) => {
           if(err) console.log(err);
         })
       }
+      done(null,'true');
     }
     // res.json("Successfully Updated");    
   })
